@@ -28,6 +28,17 @@
   - openstack_cli_exists is succeeded
   - stack_exists is failed
 
+- name: Check if stack create completed
+  shell: openstack stack list | grep -w "openshift-cluster" | grep -w "CREATE_COMPLETE"
+  ignore_errors: True
+  register: stack_created
+  when:
+  - openstack_cli_exists is succeeded
+  - stack_exists is failed
+  until: stack_created.stdout != ""
+  retries: 30
+  delay: 10
+
 - name: Dry-run the stack (update)
   command: openstack stack update --dry-run -t {{ stack_template_path }} {{ openshift_openstack_stack_name }}
   ignore_errors: True
